@@ -6,6 +6,12 @@ const modal = document.querySelector('.modal');
 const overlay = document.querySelector('.overlay');
 const btnCloseModal = document.querySelector('.btn--close-modal');
 const btnsOpenModal = document.querySelectorAll('.btn--show-modal');
+const nav = document.querySelector('.nav');
+const tabs = document.querySelectorAll('.operations__tab');
+const tabsContainer = document.querySelector('.operations__tab-container');
+const tabsContent = document.querySelectorAll('.operations__content');
+const header = document.querySelector('.header');
+const navHeight = nav.getBoundingClientRect().height;
 
 ///////////////////////////////////////
 // Modal window
@@ -33,8 +39,6 @@ document.addEventListener('keydown', function (e) {
 });
 
 /////////////////////////////////////////// ADDING AND DELETING
-
-const header = $('.header');
 
 //const allSections = document.querySelectorAll('.section');
 const allSections = $('.section');
@@ -244,5 +248,96 @@ console.log(h1.nextElementSibling);
 console.log(h1.previousSibling);
 console.log(h1.nextSibling);
 
-get all siblings as an HTML coll
+// Get all siblings as an HTML collection
 console.log(h1.parentElement.children);
+
+// HTML collection is not an array, but is an iterable
+// Manipulae all siblings except the target.
+// [...h1.parentElement.children].forEach(function(el) {
+//   if(el !== h1) el.style.transform = 'scale(0.5)';
+// })
+
+////////////////////////////////////////////////// BUILDING TABBED COMPONENTS
+
+tabsContainer.addEventListener('click', function (e) {
+  const clicked = e.target.closest('.operations__tab'); // Gets closest parent with the class.
+  console.log(clicked);
+
+  // Guard clause - exits the funtion if condition is met.
+  if (!clicked) return;
+
+  // Remove active classes
+  tabs.forEach(t => t.classList.remove('operations__tab--active'));
+  tabsContent.forEach(c => c.classList.remove('operations__content--active'));
+
+  // Activate tab and content area
+  clicked.classList.add('operations__tab--active');
+  document
+    .querySelector(`.operations__content--${clicked.dataset.tab}`)
+    .classList.add('operations__content--active');
+});
+
+///////////////////////////////////////////////// PASSING ARGUEMENTS TO EVENT HANDLERS
+
+// Menu fade animation
+const handleHover = function (e) {
+  if (e.target.classList.contains('nav__link')) {
+    const link = e.target;
+    const sibs = link.closest('.nav').querySelectorAll('.nav__link');
+    const logo = link.closest('.nav').querySelector('img');
+
+    sibs.forEach(el => {
+      if (el !== link) el.style.opacity = this;
+    });
+    logo.style.opacity = this;
+  }
+};
+
+// nav.addEventListener('mouseover', function (e) {
+//   handleHover(e, 0.5);
+// });
+
+// nav.addEventListener('mouseout', function (e) {
+//   handleHover(e, 1);
+// });
+
+// Even better:
+nav.addEventListener('mouseover', handleHover.bind(0.5));
+nav.addEventListener('mouseout', handleHover.bind(1));
+
+//////////////////////////////////////////////////// STICKY NAVIGATION BAR
+// const initCoords = section1.getBoundingClientRect();
+// window.addEventListener('scroll', function (e) {
+//   if (this.window.scrollY > initCoords.top) nav.classList.add('sticky');
+//   else nav.classList.remove('sticky');
+// }); // Not a great method due to the frequency of scroll events (will break phones!)
+
+// A better way using Intersetion Observer API:
+// const obsCallBack = function (entries, observer) {
+//   entries.forEach(entry => {
+//     console.log(entry);
+//   });
+// };
+
+// const obsOpts = {
+//   root: null, // setting root to null selects the viewport
+//   threshold: 0.1, // intersection threshold at 10%
+// };
+
+// const observer = new IntersectionObserver(obsCallBack, obsOpts);
+// observer.observe(section1);
+
+const stickyNav = function (entries) {
+  const [entry] = entries;
+
+  if (!entry.isIntersecting) nav.classList.add('sticky');
+  else nav.classList.remove('sticky');
+};
+
+const headerObserver = new IntersectionObserver(stickyNav, {
+  root: null,
+  threshold: 0,
+  rootMargin: `-${navHeight}px`,
+});
+
+headerObserver.observe(header);
