@@ -41,7 +41,7 @@ document.addEventListener('keydown', function (e) {
 /////////////////////////////////////////// ADDING AND DELETING
 
 //const allSections = document.querySelectorAll('.section');
-const allSections = $('.section');
+const allSections = document.querySelectorAll('.section');
 // console.log(allSections);
 
 //const allButtons = document.getElementsByTagName('button');
@@ -341,3 +341,46 @@ const headerObserver = new IntersectionObserver(stickyNav, {
 });
 
 headerObserver.observe(header);
+
+//////////////////////////////////// REVEAL SECTIONS
+const revealSection = function (entries, observer) {
+  const [entry] = entries;
+
+  if (!entry.isIntersecting) return;
+
+  entry.target.classList.remove('section--hidden');
+  observer.unobserve(entry.target);
+};
+
+const sectionObs = new IntersectionObserver(revealSection, {
+  root: null,
+  threshold: 0.15,
+});
+
+allSections.forEach(function (section) {
+  sectionObs.observe(section);
+  section.classList.add('section--hidden');
+});
+
+/////////////////////////////////// LAZY LOADING IMAGES
+const imgTargets = document.querySelectorAll('img[data-src]');
+
+const loadImg = function (entries, obs) {
+  const [entry] = entries;
+
+  if (!entry.isIntersecting) return;
+
+  entry.target.src = entry.target.dataset.src;
+
+  entry.target.addEventListener('load', function () {
+    this.classList.remove('lazy-img');
+  });
+};
+
+const imgObs = new IntersectionObserver(loadImg, {
+  root: null,
+  threshold: 0,
+  rootMargin: '-200px',
+});
+
+imgTargets.forEach(img => imgObs.observe(img));
